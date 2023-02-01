@@ -1,10 +1,16 @@
 package com.example.directprinthybrid;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.util.Log;
 import android.widget.Toast;
 import java.io.File;
@@ -25,7 +31,10 @@ public class MediaListenerService extends Service {
     public void onCreate() {
         super.onCreate();
         startWatching();
+
+
     }
+
 
 
     private void startWatching() {
@@ -47,9 +56,7 @@ public class MediaListenerService extends Service {
 
                             //File chosenFile=getLastModified(pathToWatch);
                             //Log.i("filename", chosenFile.getName());
-                            if(true){//new file added???
 
-                            }
 
                         }
                     });
@@ -64,34 +71,24 @@ public class MediaListenerService extends Service {
 
     private String prev = "";
 
+
     private void printNow(String newDoc){
         //print from SDK
         //Toast.makeText(getBaseContext(), newDoc + " was saved!", Toast.LENGTH_SHORT).show();
-        if(!newDoc.equals(prev)){
+        if(!newDoc.equals(prev)) {
             Log.i("filename", newDoc);
             prev = newDoc;
-        }
-    }
-
-    public static File getLastModified(String directoryFilePath)
-    {
-        File directory = new File(directoryFilePath);
-        File[] files = directory.listFiles(File::isFile);
-        long lastModifiedTime = Long.MIN_VALUE;
-        File chosenFile = null;
-
-        if (files != null)
-        {
-            for (File file : files)
-            {
-                if (file.lastModified() > lastModifiedTime)
-                {
-                    chosenFile = file;
-                    lastModifiedTime = file.lastModified();
-                }
-            }
+            final String pathPdfRead = android.os.Environment.getExternalStorageDirectory().toString() + "/Movies/"+newDoc;
+            //File myFile = new File(pathPdfRead);
+            PrintManager printManager = (PrintManager) this.getSystemService(Context.PRINT_SERVICE);
+            PrintDocumentAdapter printAdapter = new PdfDocumentAdapter(pathPdfRead);
+            String jobName = getString(R.string.app_name) + newDoc;
+            printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+            Log.i("filename", "End Print");
         }
 
-        return chosenFile;
+
     }
+
+
 }
